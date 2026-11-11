@@ -32,7 +32,16 @@ for (const match of html.matchAll(/(?:src|href)="([^"]+)"/g)) {
   assert(!/[:?#]/.test(value), 'Unexpected remote or dynamic asset');
   assert(fs.existsSync(path.join(root, 'dist', value)), 'Missing local asset');
 }
-assert(!/@import|url\(\s*['"]?https?:/i.test(read('dist/styles.css')), 'Unexpected external CSS asset');
+const css = read('dist/styles.css');
+assert(!/@import/i.test(css), 'Unexpected CSS import');
+for (const match of css.matchAll(/url\(\s*['"]?([^'"\s)]+)['"]?\s*\)/gi)) {
+  const value = match[1];
+  assert(!/[:?#]|(^|\/)\.\.(\/|$)|^\//.test(value), 'Unexpected remote or dynamic CSS asset');
+  assert(fs.statSync(path.join(root, 'dist', value)).isFile(), 'Missing local CSS asset');
+}
+for (const family of ['Anuphan', 'Chakra-Petch', 'JetBrains-Mono']) {
+  assert(read('dist/fonts/' + family + '-OFL.txt').includes('SIL OPEN FONT LICENSE'), 'Missing font license');
+}
 for (const name of ['README.md', 'README.th.md', 'LICENSE', 'SECURITY.md', 'docs/THREAT_MODEL.md']) assert(read(name).trim(), 'Missing documentation');
 assert(!Object.keys(JSON.parse(read('package.json')).dependencies || {}).length, 'Unexpected runtime dependency');
 console.log('Static checks passed: script syntax, local assets, DOM IDs, privacy API policy, CSP and documentation.');

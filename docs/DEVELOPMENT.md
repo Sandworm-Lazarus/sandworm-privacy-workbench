@@ -1,5 +1,24 @@
 # Development notes
 
+## 0.1.1 — 2026-11-11
+
+The Workbench adopts the dark cyber theme of [Sandworm Lazarus](https://sandworm-lazarus.pages.dev/). The page uses the reference's dark navy, coral, cyan, and green palette with angular headings, thin panel borders, and clipped-corner primary controls. The layout is adapted to the local redaction workflow, with separate source and result panels, visible rule controls, and review before export.
+
+### Authored presentation changes
+
+- Reworked the page layout and responsive styles for the Sandworm visual identity.
+- Created `dist/network.svg` as original decorative network artwork for this app.
+- Kept the redaction engine and browser workflow intact: email and selected-field masking, source visibility, input-safe errors, resource limits, result invalidation, and review-gated export.
+- Kept all runtime assets local. No external font service, analytics, or additional runtime dependency was introduced.
+
+### Fonts and attribution
+
+The app bundles seven unmodified WOFF2 files: Chakra Petch 700 in Thai and Latin subsets; Anuphan 400 and 600 in Thai and Latin subsets; and JetBrains Mono 400 in a Latin subset. These match the reference site's public-facing font assets. Each downloaded file's WOFF2 signature and Git blob hash were checked against the source.
+
+The fonts total 84,020 bytes and use `font-display: swap`. Full SIL Open Font License 1.1 notices are kept in both `docs/fonts/` and `dist/fonts/`, so the standalone static distribution carries its licenses. [Third-party notices](../THIRD_PARTY_NOTICES.md) lists the font authors and official license sources. Application code and original artwork remain under the repository's MIT license.
+
+This release changes presentation without changing the documented matching rules or processing limits. Theme and browser verification evidence belongs in [VALIDATION.md](VALIDATION.md); the initial 0.1.0 results below remain a historical record.
+
 ## 0.1.0 — 2026-11-11
 
 Privacy Workbench turns an existing authored redaction utility into a browser application for preparing shareable logs and JSON. The source is maintained as a standalone project under Sandworm-Lazarus.

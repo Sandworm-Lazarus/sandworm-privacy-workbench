@@ -6,9 +6,17 @@ Prepare logs and JSON for sharing, with redaction that runs in your browser.
 
 Privacy Workbench is an original, buildless tool from **Sandworm-Lazarus**. Paste text or open a local file, choose the fields to mask, inspect the result, and export a reviewed copy. Processing needs no account, API key, or dependency installation. The app is designed for offline use.
 
-**Version: 0.1.0.** This is a focused redaction tool, not a guarantee that every sensitive value has been found.
+**Version: 0.1.1.** This is a focused redaction tool, not a guarantee that every sensitive value has been found.
 
 ![Privacy Workbench displaying a synthetic redaction example](docs/preview.png)
+
+## Sandworm theme
+
+The interface follows the visual identity of [Sandworm Lazarus](https://sandworm-lazarus.pages.dev/): a dark navy background, coral headings, cyan source indicators, green result indicators, and angular controls. The network illustration is original SVG artwork created for this Workbench.
+
+Chakra Petch, Anuphan, and JetBrains Mono are bundled locally, including Thai and Latin subsets where applicable. Typography and artwork load from `dist/`, so the downloaded app needs no external font service. Font licenses and attribution are included in [Third-party notices](THIRD_PARTY_NOTICES.md).
+
+This release updates the presentation while retaining email and JSON-field redaction, the 1 MiB limits, input-safe error messages, and mandatory review before export.
 
 ## Try it locally
 
@@ -97,4 +105,4 @@ This browser implementation grows from the original Python Privacy Guard in [San
 
 It is not a byte-for-byte port. In particular, the Python tool uses Unicode case folding for field matching; this app folds ASCII letters only. Development decisions and validation scope are recorded in [Development](docs/DEVELOPMENT.md).
 
-Released under the [MIT License](LICENSE). For reporting a problem involving sensitive data, read [SECURITY.md](SECURITY.md).
+Application code and original artwork are released under the [MIT License](LICENSE). Bundled fonts retain their SIL Open Font License 1.1; see [Third-party notices](THIRD_PARTY_NOTICES.md). For reporting a problem involving sensitive data, read [SECURITY.md](SECURITY.md).
