@@ -10,6 +10,7 @@
   <link rel="icon" href="mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
   <script src="privacy-guard.js" defer></script>
+  <script src="presidio-report.js" defer></script>
   <script src="app.js" defer></script>
 </head>
 <body>
@@ -22,7 +23,7 @@
   <main>
     <div class="page-content">
       <section class="intro">
-        <div class="intro-content"><div class="eyebrow"><span></span> SANDWORM LAB / TOOL–001</div><h1>PRIVACY<br><span>WORKBENCH</span></h1><p>ส่งต่อสิ่งที่จำเป็น <strong>เก็บข้อมูลส่วนตัวไว้กับคุณ</strong><br>ปิดบังข้อความและ JSON ก่อนส่งให้ AI หรือแนบ issue<br class="desktop-break"> ประมวลผลในเบราว์เซอร์ แล้วตรวจทานก่อนแชร์</p><div class="hero-meta"><span><i></i> BROWSER-LOCAL</span><span>TEXT / JSON</span><span>v0.1.1</span></div></div>
+        <div class="intro-content"><div class="eyebrow"><span></span> SANDWORM LAB / TOOL–001</div><h1>PRIVACY<br><span>WORKBENCH</span></h1><p>ส่งต่อสิ่งที่จำเป็น <strong>เก็บข้อมูลส่วนตัวไว้กับคุณ</strong><br>ปิดบังข้อความและ JSON ก่อนส่งให้ AI หรือแนบ issue<br class="desktop-break"> ประมวลผลในเบราว์เซอร์ แล้วตรวจทานก่อนแชร์</p><div class="hero-meta"><span><i></i> BROWSER-LOCAL</span><span>TEXT / JSON</span><span>v0.2.0</span></div></div>
         <aside class="privacy-brief" aria-label="ขอบเขตการประมวลผล"><div class="brief-title"><span class="status-dot"></span> YOUR DATA STAYS HERE</div><dl><div><dt>ประมวลผล</dt><dd>ในเบราว์เซอร์</dd></div><div><dt>อัปโหลดเนื้อหา</dt><dd>ไม่มี</dd></div><div><dt>ขนาดข้อมูลสูงสุด</dt><dd>1 MiB</dd></div></dl><div class="brief-foot"><span aria-hidden="true">⌁</span> REVIEW BEFORE YOU SHARE</div></aside>
       </section>
       <div class="stepbar" aria-label="ขั้นตอน"><span class="step-current"><b>01</b> ใส่ข้อมูล</span><span class="step-line"></span><span><b>02</b> เลือกกฎและปิดบัง</span><span class="step-line"></span><span><b>03</b> ตรวจทานและดาวน์โหลด</span></div>
@@ -39,8 +40,16 @@
         <div class="review-row"><div class="review-copy"><label><input id="review-check" type="checkbox" disabled><strong>ฉันตรวจทานผลลัพธ์แล้ว</strong></label><p>ตรวจว่าข้อมูลที่ต้องการเก็บเป็นส่วนตัวยังหลงเหลืออยู่หรือไม่</p></div><div class="export-actions"><button id="copy-btn" class="button secondary" disabled>คัดลอก</button><button id="download-btn" class="button dark" disabled>ดาวน์โหลด <span aria-hidden="true">↓</span></button></div></div>
         <div id="status" class="status-line" role="status" aria-live="polite">พร้อมทำงาน · ข้อมูลจะอยู่ในหน้านี้จนกว่าคุณล้างหรือปิดหน้า</div>
       </section>
+      <section class="presidio-section" aria-labelledby="presidio-title">
+        <div class="workspace-heading"><div><h2 id="presidio-title"><span class="section-index">02 /</span> PRESIDIO <span class="tag">LOCAL WORKER</span></h2><p>กฎข้อมูลไทยและคำที่กำหนดเอง → ตรวจทานผลใน Workbench</p></div><button id="presidio-import" class="button secondary">นำเข้ารายงาน Presidio ↑</button></div>
+        <p>รัน Python worker ในเครื่องหรือคลาวด์ของคุณ แล้วเลือกไฟล์รายงานที่ปิดบังแล้ว หน้านี้ไม่เรียก Python และไม่ส่งข้อมูลออกไป การนำเข้าจะล้างต้นฉบับและผลเดิมออกจากหน้าจอ</p>
+        <input id="presidio-file" type="file" accept=".json" hidden>
+        <pre class="worker-command"><code>python integrations/presidio/redact.py input.local.txt --policy policy.local.json --output report.local.json</code></pre>
+        <p>เลือกชนิดข้อมูล ปรับเกณฑ์คะแนน และเพิ่มคำที่ต้องปิดบังแบบตรงตัวใน policy ได้ ดูคู่มือใน GitHub ของโปรเจกต์ รายงานไม่รวมข้อความต้นฉบับหรือรายการคำที่กำหนด แต่ข้อมูลที่กฎตรวจไม่พบยังอาจอยู่ในผลลัพธ์</p>
+        <div id="presidio-panel" hidden><p id="presidio-summary" role="status"></p><p class="file-note">ตำแหน่งนับเป็น Unicode code points ในต้นฉบับ ไม่ใช่ตำแหน่งในผลที่ปิดบังแล้ว · รายงานที่นำเข้าเป็นข้อมูลที่ยังไม่ได้ยืนยันแหล่งกำเนิด</p><div class="findings-scroll"><table class="findings-table"><thead><tr><th>ชนิดข้อมูล</th><th>เริ่ม</th><th>สิ้นสุด</th><th>คะแนน</th></tr></thead><tbody id="presidio-findings"></tbody></table></div></div>
+      </section>
       <section id="guide" class="guide"><div class="guide-heading"><span class="eyebrow">02 / KNOW THE BOUNDARIES</span><h2>ก่อนนำผลลัพธ์ไปใช้</h2></div><div class="guide-item"><span class="guide-number">01 / LOCAL</span><h3>ประมวลผลในเบราว์เซอร์</h3><p>แอปไม่ส่งเนื้อหาออกไปและไม่บันทึกประวัติ ดาวน์โหลดโปรเจกต์จาก GitHub แล้วเปิดใช้ออฟไลน์ได้</p></div><div class="guide-item"><span class="guide-number">02 / SCOPE</span><h3>ปิดบังตามกฎที่เลือก</h3><p>ตรวจอีเมลแบบ ASCII และฟิลด์ JSON ที่กำหนด ผลลัพธ์ยังต้องตรวจทานก่อนแชร์ทุกครั้ง</p></div><div class="guide-item"><span class="guide-number">03 / REVIEW</span><h3>เปลี่ยนข้อมูล ต้องตรวจใหม่</h3><p>เมื่อแก้ต้นฉบับหรือกฎ ผลลัพธ์เดิมจะถูกล้าง เพื่อให้ไฟล์ที่ส่งออกตรงกับสิ่งที่คุณเพิ่งตรวจ</p></div></section>
-      <footer class="page-footer"><span class="footer-brand">SANDWORM <b>LAZARUS</b></span><span>PRIVACY WORKBENCH <span>·</span> v0.1.1 <span>·</span> MIT</span><a href="https://github.com/Sandworm-Lazarus/sandworm-privacy-workbench" target="_blank" rel="noopener noreferrer">ดูโค้ดและข้อจำกัด <svg class="external-arrow" aria-hidden="true" viewBox="0 0 16 16"><path d="M3 13 13 3M3 3h10v10"/></svg></a></footer>
+      <footer class="page-footer"><span class="footer-brand">SANDWORM <b>LAZARUS</b></span><span>PRIVACY WORKBENCH <span>·</span> v0.2.0 <span>·</span> MIT</span><a href="https://github.com/Sandworm-Lazarus/sandworm-privacy-workbench" target="_blank" rel="noopener noreferrer">ดูโค้ดและข้อจำกัด <svg class="external-arrow" aria-hidden="true" viewBox="0 0 16 16"><path d="M3 13 13 3M3 3h10v10"/></svg></a></footer>
     </div>
   </main>
   <noscript><div class="noscript">เปิด JavaScript เพื่อประมวลผลข้อมูลภายในเบราว์เซอร์</div></noscript>

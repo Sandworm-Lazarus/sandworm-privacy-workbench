@@ -7,7 +7,7 @@ const vm = require('node:vm');
 const root = path.resolve(__dirname, '..');
 const read = name => fs.readFileSync(path.join(root, name), 'utf8');
 const html = read('dist/index.html');
-const scripts = ['privacy-guard.js', 'app.js'];
+const scripts = ['privacy-guard.js', 'presidio-report.js', 'app.js'];
 for (const name of scripts) {
   const content = read('dist/' + name);
   new vm.Script(content, { filename: name });

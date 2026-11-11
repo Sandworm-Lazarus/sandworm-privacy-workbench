@@ -53,3 +53,11 @@ python3 -m http.server 8080 --bind 127.0.0.1 --directory dist
 ```
 
 Then open `http://127.0.0.1:8080`. `npm run serve` invokes the same Python command when Node.js/npm is available.
+
+## 0.2.0 Presidio integration checks — 2026-11-11
+
+- `npm test`: **68 passed**, including strict report validation and DOM-controller import/export regressions.
+- `npm run verify`: passed script/local-asset/CSP/privacy-API checks.
+- `integrations/presidio/.venv/bin/python integrations/presidio/validate.py`: **26 passed** against actual Presidio 2.2.366 plus fresh-process socket-denied smoke with zero network attempts.
+- Exact source hashes are recorded in `integrations/presidio/reports/validation.json` and `reports/presidio-ui-validation.json`.
+- This release's UI has **not** been visually browser-verified; earlier theme screenshots/checks are historical. No hosted CI pass is asserted.

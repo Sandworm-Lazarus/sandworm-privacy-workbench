@@ -106,3 +106,11 @@ This browser implementation grows from the original Python Privacy Guard in [San
 It is not a byte-for-byte port. In particular, the Python tool uses Unicode case folding for field matching; this app folds ASCII letters only. Development decisions and validation scope are recorded in [Development](docs/DEVELOPMENT.md).
 
 Application code and original artwork are released under the [MIT License](LICENSE). Bundled fonts retain their SIL Open Font License 1.1; see [Third-party notices](THIRD_PARTY_NOTICES.md). For reporting a problem involving sensitive data, read [SECURITY.md](SECURITY.md).
+
+## Optional cloud worker integration
+
+[Presidio Thai pattern worker](integrations/presidio/README.md) adds a separately run integration with pinned upstream dependencies, synthetic fixtures, regression tests and SHA-256 validation records. See its guide for installation, privacy boundaries and verified integration scope. The browser application remains independently usable.
+
+## Presidio report review (0.2.0)
+
+The [Presidio worker](integrations/presidio/README.md) now supports choosing Thai PII types, a score threshold and bounded exact custom terms. Run it in your local/cloud Python environment, then import its schema 2 JSON into the **Presidio** section of the existing UI. Import clears the source, shows redacted text with finding metadata, and preserves review-before-export. The browser does not run Python or upload data. Source claims in imported reports are not authenticated.

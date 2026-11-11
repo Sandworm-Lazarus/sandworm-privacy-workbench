@@ -1,0 +1,36 @@
+{
+  "schema_version": 2,
+  "project": "sandworm-privacy-workbench",
+  "mode": "live",
+  "engine": "presidio-2.2.366-pattern-only",
+  "input_sha256": "821d64c30ea085ee828f8d01f50b8ddae666a4769c53b12825c6ff253999bb21",
+  "input_chars": 87,
+  "redactedText": "ตัวอย่างสมมติ: อีเมล [REDACTED] เบอร์ [REDACTED] ข้อมูลอื่นยังต้องตรวจเอง\n",
+  "policy": {
+    "entities": [
+      "THAI_ID",
+      "THAI_MOBILE",
+      "EMAIL_ADDRESS"
+    ],
+    "minimum_score": 0.5,
+    "custom_terms_count": 0
+  },
+  "summary": {
+    "detections": 2,
+    "scope": "Thai ASCII mobile / checksum-valid ID / ASCII email / optional exact literals"
+  },
+  "findings": [
+    {
+      "entity": "EMAIL_ADDRESS",
+      "start": 21,
+      "end": 44,
+      "score": 0.8
+    },
+    {
+      "entity": "THAI_MOBILE",
+      "start": 51,
+      "end": 61,
+      "score": 0.8
+    }
+  ]
+}

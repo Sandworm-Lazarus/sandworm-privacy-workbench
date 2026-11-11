@@ -10,6 +10,12 @@
     const el = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
     if (ids.some(id => !el[id]) || !globalThis.PrivacyGuard) return;
     const guard = globalThis.PrivacyGuard;
+    const presidio = Object.fromEntries(['presidio-import','presidio-file','presidio-panel','presidio-summary','presidio-findings'].map(id=>[id,document.getElementById(id)]));
+    function resetPresidio(){
+      if(presidio['presidio-panel']) presidio['presidio-panel'].hidden=true;
+      if(presidio['presidio-findings']) presidio['presidio-findings'].replaceChildren();
+      if(presidio['presidio-summary']) presidio['presidio-summary'].textContent='';
+    }
     const hint = document.getElementById('mode-hint');
     const encoder = new TextEncoder();
     let mode = 'json';
@@ -51,6 +57,7 @@
 
     function invalidate(message) {
       revision += 1;
+      resetPresidio();
       result = null;
       el.output.value = '';
       el['review-check'].checked = false;
@@ -155,6 +162,46 @@
       }
     }
 
+    async function importPresidio(files) {
+      el.source.value='';
+      el['file-input'].value='';
+      el['source-label'].textContent='ไม่มีต้นฉบับ — รายงานจาก local worker';
+      el['hide-source'].checked=false;
+      showSource();
+      const ticket=invalidate('กำลังตรวจรูปแบบรายงาน Presidio ในเครื่อง…');
+      try{
+        const parser=globalThis.PresidioReport;
+        if(!parser||!files||files.length!==1||!/\.json$/i.test(files[0].name||'')||!Number.isSafeInteger(files[0].size)||files[0].size<0||files[0].size>parser.MAX_BYTES) throw new Error();
+        const bytes=await files[0].arrayBuffer();
+        if(ticket!==revision) return;
+        if(bytes.byteLength>parser.MAX_BYTES) throw new Error();
+        const report=parser.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
+        if(ticket!==revision) return;
+        mode='text';syncMode();
+        result=Object.freeze({output:report.output,mode:'text'});
+        el.output.value=report.output;
+        el['output-size'].textContent=byteLabel(encoder.encode(report.output).byteLength);
+        el['email-count'].textContent=String(report.findings.filter(f=>f.entity==='EMAIL_ADDRESS').length);
+        el['field-count'].textContent='—';
+        el['review-check'].disabled=false;
+        const rows=report.findings.map(f=>{
+          const row=document.createElement('tr');
+          for(const value of [f.entity,f.start,f.end,f.score.toFixed(2)]){
+            const cell=document.createElement('td');cell.textContent=String(value);row.appendChild(cell);
+          }
+          return row;
+        });
+        presidio['presidio-findings'].replaceChildren(...rows);
+        presidio['presidio-panel'].hidden=false;
+        presidio['presidio-summary'].textContent='นำเข้ารายงาน '+report.findings.length+' รายการ · เกณฑ์คะแนน '+report.minimumScore+' · กฎคำตรงตัว '+report.customTerms+' คำ';
+        syncExport();
+        say('นำเข้าผล Presidio แล้ว ตรวจทานข้อความด้านบนก่อนส่งออก แหล่งกำเนิดรายงานยังไม่ได้รับการยืนยัน');
+      }catch(_){
+        if(ticket!==revision) return;
+        invalidate();error('รายงาน Presidio ไม่ถูกต้องหรือเกิน 256 KiB ใช้รายงาน schema 2 จาก worker ของโปรเจกต์');
+      }
+    }
+
     function clear() {
       el.source.value = '';
       el['file-input'].value = '';
@@ -256,6 +303,13 @@
       importFiles(Array.from(event.dataTransfer ? event.dataTransfer.files : []));
     });
 
+    if(presidio['presidio-import']&&presidio['presidio-file']&&globalThis.PresidioReport){
+      presidio['presidio-import'].addEventListener('click',()=>presidio['presidio-file'].click());
+      presidio['presidio-file'].addEventListener('change',()=>{
+        const files=Array.from(presidio['presidio-file'].files||[]);presidio['presidio-file'].value='';
+        if(files.length) importPresidio(files);
+      });
+    }
     syncMode();
     showSource();
     invalidate('เพิ่มข้อมูลของคุณ หรือเริ่มจากตัวอย่างสมมติ');

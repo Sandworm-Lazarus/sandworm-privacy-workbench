@@ -54,3 +54,9 @@ This project does not provide encryption, a secrets vault, a sandbox for executi
 ## Verification scope
 
 Automated tests exercise fabricated inputs and explicit rules. Static verification and browser checks should be reported separately from engine unit tests. Network observations establish behavior only for the tested browser paths; source review and the documented data flow provide additional evidence. Hosted CI success must be confirmed from the actual run, not inferred from the presence of a workflow. See [VALIDATION.md](VALIDATION.md) for the recorded scope of this release's checks.
+
+## Optional Presidio worker and report import
+
+The separate Python worker can read originals in the local/cloud environment selected by its operator. It uses pinned Presidio packages, a blank tokenizer and explicit Thai/literal recognizers; no model service or download is used at runtime. Configurations accept bounded literal terms rather than executable regex/code. Linux input reads reject symlinks, FIFO and non-regular files. Report output is exclusive and owner-only on POSIX.
+
+The browser report importer clears its current original text and accepts only schema 2 redacted output and metadata. Extra raw-source fields, duplicate keys and invalid offsets are rejected without rendering them. The original input hash is discarded after validation. Finding metadata is text-only; downloaded output remains behind the review gate. Reports are untrusted user-supplied claims, not attestations, and undetected private information may remain in their text. Neither clearing nor output permissions provides secure memory/storage erasure.

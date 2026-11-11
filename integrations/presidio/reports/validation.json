@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "project": "sandworm-privacy-workbench-presidio",
+  "validated_at": "2026-11-11T12:34:26.990939+00:00",
+  "status": "passed",
+  "passed": 26,
+  "upstream_smoke": {
+    "engine": "presidio-analyzer + presidio-anonymizer",
+    "version": "2.2.366",
+    "mode": "actual-local-pattern-only",
+    "pretrained_models_downloaded": 0,
+    "fresh_process_network_attempts": 0,
+    "synthetic_detections": 2
+  },
+  "source_sha256": {
+    ".gitignore": "11f6918ab0269417d85d53d30cb31d7ff6b0ad6bc595c06b238837453a239218",
+    "README.md": "07fc472b0c8e15eb3f261f2020d15cc2b714f39c3e92896d0ec62fcf145a8b84",
+    "fixtures/input.txt": "821d64c30ea085ee828f8d01f50b8ddae666a4769c53b12825c6ff253999bb21",
+    "fixtures/policy.example.json": "40e6e4d4729d0758f142748e34b19c2df5587fc3d83a233fce6382feb59bca19",
+    "fixtures/redacted-report.json": "8d2587ab67ca9e430b59e1618a7e158bda61b8b67c6a5feec78042145ffff63b",
+    "offline_smoke.py": "1863f73c75a6fb9e1961284e8871fec214fe04b1e4c2a475c022f8b05c160e93",
+    "redact.py": "6b3c3a8910bf675206e26386db827e121ec1191131a989ea9fc96746fe5cb6d8",
+    "requirements.lock": "70a48edc851c0134927468e8155bade54ab8db4374fe4c6591fce6430445d894",
+    "requirements.txt": "0b779e8eb6a925c5f2a0267496713bdc8a3eb7f25636bd2d41220b807d365663",
+    "tests/test_redact.py": "435188a82786326667008625d03beeb5689a28538f18e933ea3d3a9d15ac0ed2",
+    "validate.py": "72abfb458d50a063227a3c66bd4a34484aa84f1b86426080e89095f669668807"
+  }
+}

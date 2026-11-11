@@ -77,3 +77,9 @@ The initial run passed 59 tests on Node.js 24.22.1 and the static verifier. [VAL
 ### Contribution boundaries
 
 Keep processing local and avoid introducing analytics, remote fonts/scripts, persistence of submitted data, or automatic uploads. Changes to recognizers or limits need boundary and regression tests. Any future third-party code must retain its license and attribution; do not describe renamed external code as wholly original.
+
+## 0.2.0 — 2026-11-11
+
+Added the real Presidio Thai worker with configurable entity selection, threshold and bounded case-sensitive literal terms. Schema 2 reports deliberately omit original text, matched substrings and custom policy terms. Added report review to the existing dark Sandworm UI with strict schema validation, text-only rendering, source clearing and export invalidation. Browser Privacy Guard and Python Presidio remain separate engines.
+
+Validation: 68 Node tests and static checks, 26 actual Presidio Python tests, and a fresh process with network connects denied. No model download or live service is required. No visual browser QA is claimed for this new section; see `BROWSER_QA.md`.

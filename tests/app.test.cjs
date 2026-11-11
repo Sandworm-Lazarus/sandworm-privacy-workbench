@@ -10,7 +10,8 @@ const ids = ['source', 'output', 'mode-json', 'mode-text', 'email-rule', 'defaul
   'custom-fields', 'redact-btn', 'demo-btn', 'clear-btn', 'upload-btn', 'file-input',
   'drop-zone', 'review-check', 'copy-btn', 'download-btn', 'status', 'error-box',
   'email-count', 'field-count', 'input-size', 'output-size', 'result-badge',
-  'source-label', 'hide-source', 'source-cover', 'source-panel', 'mode-hint'];
+  'source-label', 'hide-source', 'source-cover', 'source-panel', 'mode-hint',
+  'presidio-import','presidio-file','presidio-panel','presidio-summary','presidio-findings'];
 
 class Element {
   constructor(id) {
@@ -42,6 +43,8 @@ class Element {
   }
   click() { if (!this.disabled) return this.dispatch('click'); }
   focus() { this.focused = true; }
+  replaceChildren(...children) { this.children=children; }
+  appendChild(child) { (this.children ||= []).push(child); }
   setAttribute(name, value) { this.attributes.set(name, value); }
   remove() { this.removed = true; }
 }
@@ -55,6 +58,7 @@ function setup(options = {}) {
   doc.getElementById = id => el[id];
   const anchors = [];
   doc.createElement = tag => {
+    if(tag==='tr'||tag==='td') return new Element(tag);
     assert.equal(tag, 'a');
     const anchor = new Element('download');
     anchor.click = () => { anchor.clicked = true; };
@@ -79,6 +83,7 @@ function setup(options = {}) {
   const context = {
     document: doc,
     PrivacyGuard: engine,
+    PresidioReport: require('../dist/presidio-report.js'),
     TextEncoder,
     TextDecoder,
     Blob,
@@ -367,4 +372,41 @@ test('real engine malformed JSON clears an earlier reviewed result and reveals n
   assert.equal(app.el['copy-btn'].disabled, true);
   assert.match(app.el['error-box'].textContent, /คีย์ซ้ำ/);
   assert.equal(app.el['error-box'].textContent.includes('PRIVATE-SENTINEL'), false);
+});
+
+const presidioFixture=()=>JSON.parse(fs.readFileSync(path.join(__dirname,'../integrations/presidio/fixtures/redacted-report.json'),'utf8'));
+test('Presidio import clears source, reviews redacted output and renders metadata only',async()=>{
+ const app=setup();await reviewed(app);
+ const r=presidioFixture();
+ app.el['presidio-file'].files=[file('private-report.json',JSON.stringify(r))];
+ await app.el['presidio-file'].dispatch('change');await flush();
+ assert.equal(app.el.source.value,'');assert.equal(app.el.output.value,r.redactedText);
+ assert.equal(app.el['review-check'].checked,false);assert.equal(app.el['copy-btn'].disabled,true);
+ assert.equal(app.el['presidio-panel'].hidden,false);
+ assert.equal(app.el['presidio-findings'].children.length,r.findings.length);
+ assert(!app.el['presidio-summary'].textContent.includes(r.input_sha256));
+ app.el['review-check'].checked=true;await app.el['review-check'].dispatch('change');
+ await app.el['copy-btn'].click();assert.equal(app.clipboard.at(-1),r.redactedText);
+ assert.equal(app.networkCalls(),0);
+ await app.el['clear-btn'].click();assert.equal(app.el['presidio-panel'].hidden,true);assert.equal(app.el['presidio-findings'].children.length,0);
+});
+test('Presidio rejects extra raw fields without echo and clears prior export',async()=>{
+ const app=setup();await reviewed(app);const r=presidioFixture();r.source='PRIVATE-SENTINEL';
+ app.el['presidio-file'].files=[file('report.json',JSON.stringify(r))];
+ await app.el['presidio-file'].dispatch('change');await flush();
+ assert.equal(app.el.output.value,'');assert.equal(app.el['copy-btn'].disabled,true);assert.equal(app.el.source.value,'');
+ assert(!app.el['error-box'].textContent.includes('PRIVATE-SENTINEL'));
+});
+test('late Presidio reads cannot restore cleared state',async()=>{
+ const app=setup();const pending=deferred();const r=JSON.stringify(presidioFixture());
+ app.el['presidio-file'].files=[file('report.json',r,pending)];await app.el['presidio-file'].dispatch('change');
+ await app.el['clear-btn'].click();pending.resolve(new TextEncoder().encode(r).buffer);await flush();
+ assert.equal(app.el.output.value,'');assert.equal(app.el['presidio-panel'].hidden,true);
+});
+test('Presidio import rejects oversized and malformed UTF-8 bytes',async()=>{
+ const app=setup();
+ for(const f of [{name:'r.json',size:300000,arrayBuffer(){throw new Error();}}, {name:'r.json',size:1,async arrayBuffer(){return new Uint8Array([255]).buffer;}}]){
+  app.el['presidio-file'].files=[f];await app.el['presidio-file'].dispatch('change');await flush();
+  assert.equal(app.el['error-box'].hidden,false);assert.equal(app.el['copy-btn'].disabled,true);
+ }
 });

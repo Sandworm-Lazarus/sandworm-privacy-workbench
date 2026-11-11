@@ -1,0 +1,5 @@
+{
+  "entities": ["THAI_ID", "THAI_MOBILE", "EMAIL_ADDRESS"],
+  "minimum_score": 0.5,
+  "custom_terms": ["บุคคลสมมติ ก", "INTERNAL-FIXTURE-ONLY"]
+}

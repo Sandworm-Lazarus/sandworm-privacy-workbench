@@ -4,3 +4,8 @@ node_modules/
 coverage/
 .sites-local/
 artifacts/
+.venv/
+__pycache__/
+*.pyc
+*.local.json
+*.local.txt
