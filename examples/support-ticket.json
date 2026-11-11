@@ -1,0 +1,8 @@
+{
+  "customer_name": "บุคคลสมมติ ก",
+  "email": "nina@example.invalid",
+  "api_key": "SYNTHETIC-KEY-NOT-A-CREDENTIAL",
+  "request_id": 900719925474099312345,
+  "note": "ส่งผลทดสอบให้ support@example.invalid",
+  "status": "pending"
+}
