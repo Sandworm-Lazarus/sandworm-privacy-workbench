@@ -1,12 +1,34 @@
 """Offline Presidio worker with bounded Thai recognizers and literal policies."""
 from __future__ import annotations
-import argparse, hashlib, json, math, os, pathlib, stat, sys
+import argparse, hashlib, json, math, os, pathlib, re, stat, sys
 MAX_BYTES = 65536
 BUILTINS = ('THAI_ID', 'THAI_MOBILE', 'EMAIL_ADDRESS')
 class GuardError(ValueError): pass
 
+# Only Thai digit code points are translated; each remains exactly one code point.
+# No NFKC/NFC, whitespace deletion, or general Unicode digit coercion is used.
+THAI_DIGITS = str.maketrans('๐๑๒๓๔๕๖๗๘๙', '0123456789')
+ID_SOURCE = r'[1-8](?:[0-9]{12}|(?P<sep>[ -])[0-9]{4}(?P=sep)[0-9]{5}(?P=sep)[0-9]{2}(?P=sep)[0-9])'
+MOBILE_SOURCE = r'(?:0[689][0-9](?:[ -]?[0-9]{3})(?:[ -]?[0-9]{4})|\+66[ -]?[689][0-9](?:[ -]?[0-9]{3})(?:[ -]?[0-9]{4}))'
+NUMERIC_SCOPE = 'Thai/ASCII mobile and checksum-valid ID with bounded separators / ASCII email / optional exact literals'
+
+def normalize_numeric_text(text):
+    """Return a same-code-point-length view; original boundary i maps to i."""
+    return text.translate(THAI_DIGITS)
+
+def numeric_boundary(text, start, end):
+    # Thai prose may touch a number; ASCII identifiers, decimals, other decimal
+    # scripts and hyphenated/version continuations must not yield a substring.
+    def blocked(char):
+        return char.isdecimal() or char in 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_+.-'
+    return (start == 0 or not blocked(text[start-1])) and (end == len(text) or not blocked(text[end]))
+
 def valid_thai_id(value):
-    return isinstance(value, str) and len(value) == 13 and value.isascii() and value.isdecimal() and value[0] in '12345678' and (11-sum(int(v)*(13-i) for i,v in enumerate(value[:12]))%11)%10 == int(value[-1])
+    if not isinstance(value, str) or len(value) > 17: return False
+    normalized = normalize_numeric_text(value)
+    if re.fullmatch(ID_SOURCE, normalized) is None: return False
+    digits = normalized.replace('-', '').replace(' ', '')
+    return (11-sum(int(v)*(13-i) for i,v in enumerate(digits[:12]))%11)%10 == int(digits[-1])
 
 def policy_for(value=None):
     if value is None: value = {}
@@ -41,10 +63,24 @@ def build_analyzer(policy=None):
         def is_punct(self,word,language): return False
         def get_supported_entities(self): return []
         def get_supported_languages(self): return ['th']
-    class ThaiIdRecognizer(PatternRecognizer):
+    class ThaiNumericRecognizer(EntityRecognizer):
         def __init__(self):
-            super().__init__(supported_entity='THAI_ID',supported_language='th',patterns=[Pattern('thai-id-ascii',r'(?<![0-9])[1-8][0-9]{12}(?![0-9])',0.6)])
-        def validate_result(self,text): return valid_thai_id(text)
+            super().__init__(supported_entities=['THAI_ID','THAI_MOBILE'],supported_language='th',name='SandwormThaiNumericRecognizer')
+        def load(self): pass
+        def analyze(self,text,entities,nlp_artifacts=None):
+            view=normalize_numeric_text(text)
+            found=[]
+            patterns=[]
+            if 'THAI_ID' in entities: patterns.append(('THAI_ID',ID_SOURCE,1.0))
+            if 'THAI_MOBILE' in entities: patterns.append(('THAI_MOBILE',MOBILE_SOURCE,0.8))
+            for entity,source,score in patterns:
+                for match in re.finditer(source,view):
+                    start,end=match.span()
+                    if not numeric_boundary(text,start,end): continue
+                    if entity=='THAI_ID' and not valid_thai_id(match.group()): continue
+                    found.append(RecognizerResult(entity,start,end,score))
+                    if len(found)>1000: raise GuardError('FINDING_LIMIT')
+            return found
     class LiteralRecognizer(EntityRecognizer):
         def __init__(self): super().__init__(supported_entities=['CUSTOM_TERM'],supported_language='th',name='SandwormLiteralRecognizer')
         def load(self): pass
@@ -60,8 +96,7 @@ def build_analyzer(policy=None):
                     offset=start+len(term)
             return found
     registry=RecognizerRegistry(supported_languages=['th'])
-    if 'THAI_ID' in policy['entities']: registry.add_recognizer(ThaiIdRecognizer())
-    if 'THAI_MOBILE' in policy['entities']: registry.add_recognizer(PatternRecognizer(supported_entity='THAI_MOBILE',supported_language='th',patterns=[Pattern('thai-mobile-ascii',r'(?<![A-Za-z0-9+])(?:0[689][0-9]{8}|\+66[689][0-9]{8})(?![0-9])',0.8)]))
+    if any(e in policy['entities'] for e in ('THAI_ID','THAI_MOBILE')): registry.add_recognizer(ThaiNumericRecognizer())
     if 'EMAIL_ADDRESS' in policy['entities']: registry.add_recognizer(PatternRecognizer(supported_entity='EMAIL_ADDRESS',supported_language='th',patterns=[Pattern('email-ascii',r'(?<![A-Za-z0-9._%+\-@])[A-Za-z0-9._%+\-]{1,64}@[A-Za-z0-9](?:[A-Za-z0-9\-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9\-]{0,61}[A-Za-z0-9])?)+(?![A-Za-z0-9.\-])',0.8)]))
     if policy['custom_terms']: registry.add_recognizer(LiteralRecognizer())
     return AnalyzerEngine(registry=registry,nlp_engine=PatternOnlyEngine(),supported_languages=['th'])
@@ -80,7 +115,7 @@ def redact(text, analyzer=None, policy=None):
         found=analyzer.analyze(text=text,language='th',entities=entities,score_threshold=policy['minimum_score'])
         if len(found)>1000: raise GuardError('FINDING_LIMIT')
         result=AnonymizerEngine().anonymize(text=text,analyzer_results=found,operators={'DEFAULT':OperatorConfig('replace',{'new_value':'[REDACTED]'})})
-        return {'schema_version':2,'project':'sandworm-privacy-workbench','mode':'live','engine':'presidio-2.2.366-pattern-only','input_sha256':hashlib.sha256(encoded).hexdigest(),'input_chars':len(text),'redactedText':result.text,'policy':{'entities':entities,'minimum_score':policy['minimum_score'],'custom_terms_count':len(policy['custom_terms'])},'summary':{'detections':len(found),'scope':'Thai ASCII mobile / checksum-valid ID / ASCII email / optional exact literals'},'findings':[{'entity':r.entity_type,'start':r.start,'end':r.end,'score':r.score} for r in sorted(found,key=lambda r:(r.start,r.end,r.entity_type))]}
+        return {'schema_version':2,'project':'sandworm-privacy-workbench','mode':'live','engine':'presidio-2.2.366-pattern-only','input_sha256':hashlib.sha256(encoded).hexdigest(),'input_chars':len(text),'redactedText':result.text,'policy':{'entities':entities,'minimum_score':policy['minimum_score'],'custom_terms_count':len(policy['custom_terms'])},'summary':{'detections':len(found),'scope':NUMERIC_SCOPE},'findings':[{'entity':r.entity_type,'start':r.start,'end':r.end,'score':r.score} for r in sorted(found,key=lambda r:(r.start,r.end,r.entity_type))]}
     except GuardError: raise
     except ImportError: raise GuardError('DEPENDENCIES_MISSING') from None
     except Exception: raise GuardError('REDACTION_FAILED') from None

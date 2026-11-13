@@ -26,3 +26,10 @@ test('duplicate escaped keys and oversized reports rejected',()=>{
 test('HTML-like output stays literal text for a safe DOM sink',()=>{
  const r=fixture();r.redactedText='<img src=x onerror=alert(1)>';assert.equal(api.parse(JSON.stringify(r)).output,r.redactedText);
 });
+
+test('new numeric scope imports while legacy schema-2 reports stay accepted',()=>{
+ const r=fixture();
+ r.summary.scope='Thai/ASCII mobile and checksum-valid ID with bounded separators / ASCII email / optional exact literals';
+ const out=api.parse(JSON.stringify(r));assert.equal(out.findings.length,r.findings.length);
+ r.summary.scope='arbitrary unsupported detector';assert.throws(()=>api.parse(JSON.stringify(r)),/INVALID_PRESIDIO_REPORT/);
+});

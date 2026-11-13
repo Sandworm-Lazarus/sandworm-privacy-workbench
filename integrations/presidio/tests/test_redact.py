@@ -17,7 +17,7 @@ class RedactionTests(unittest.TestCase):
  def test_wrong_checksum(self):
   self.assertFalse(valid_thai_id('1234567890123'));self.assertEqual(self.go('1234567890123')['summary']['detections'],0)
  def test_bad_id_prefix(self): self.assertFalse(valid_thai_id('0000000000000')); self.assertFalse(valid_thai_id('9999999999999'))
- def test_ascii_scope(self): self.assertEqual(self.go('๐๘๙๐๐๐๐๐๐๐')['summary']['detections'],0)
+ def test_thai_digit_scope(self): self.assertEqual(self.go('๐๘๙๐๐๐๐๐๐๐')['summary']['detections'],1)
  def test_mobile_boundary(self): self.assertEqual(self.go('108900000001')['summary']['detections'],0)
  def test_invalid_unicode(self):
   with self.assertRaisesRegex(GuardError,'INVALID_UTF8'): self.go('\ud800')
@@ -89,4 +89,42 @@ class PolicyTests(unittest.TestCase):
   with contextlib.redirect_stderr(stderr):self.assertEqual(main(['--RAW-PRIVATE-SENTINEL']),2)
   self.assertEqual(stderr.getvalue().strip(),'{"error": "INVALID_ARGUMENTS"}')
 
+class NumericCoverageTests(unittest.TestCase):
+ @classmethod
+ def setUpClass(cls): cls.analyzer=build_analyzer()
+ def test_formatted_id_checksum(self):
+  for value in ['1-2345-67890-12-1','๑ ๒๓๔๕ ๖๗๘๙๐ ๑๒ ๑','๑-2๓4๕-6๗8๙0-1๒-1']:
+   with self.subTest(format='synthetic'):
+    self.assertTrue(valid_thai_id(value))
+    self.assertEqual(redact(value,self.analyzer)['redactedText'],'[REDACTED]')
+ def test_offsets_preserve_original_codepoints(self):
+  value='๐8๙-0๐0-0๐0๐'
+  text='😀 ก\u0e33 โทร'+value+' จบ'
+  report=redact(text,self.analyzer)
+  finding=report['findings'][0]
+  self.assertEqual(text[finding['start']:finding['end']],value)
+  self.assertEqual(finding['start'],len('😀 ก\u0e33 โทร'))
+  self.assertEqual(report['redactedText'],'😀 ก\u0e33 โทร[REDACTED] จบ')
+  self.assertNotIn(value,json.dumps(report,ensure_ascii=False))
+ def test_normalization_is_one_codepoint_only(self):
+  from redact import normalize_numeric_text
+  original='😀 ก\u0e33 A\u0301 ๐8๙ fullwidth０'
+  view=normalize_numeric_text(original)
+  self.assertEqual(len(view),len(original))
+  self.assertEqual(view,'😀 ก\u0e33 A\u0301 089 fullwidth０')
+ def test_numeric_version_and_identifier_boundaries(self):
+  for value in ['v0890000000','0890000000beta','0890000000.2','๑0890000000','١0890000000','1234567890121.2','id1234567890121','089-000-0000-1']:
+   with self.subTest(kind='negative'):
+    self.assertEqual(redact(value,self.analyzer)['summary']['detections'],0)
+ def test_only_bounded_single_space_or_hyphen_groups(self):
+  for value in ['089--000-0000','089  000 0000','089\t000\t0000','089\n000\n0000','1-2345 67890-12-1','１234567890121']:
+   with self.subTest(kind='negative'):
+    self.assertEqual(redact(value,self.analyzer)['summary']['detections'],0)
+ def test_numeric_policy_selection_and_threshold(self):
+  text='๑-๒๓๔๕-๖๗๘๙๐-๑๒-๑ / ๐๘๙-๐๐๐-๐๐๐๐'
+  r=redact(text,policy={'entities':['THAI_ID']})
+  self.assertEqual([f['entity'] for f in r['findings']],['THAI_ID'])
+  self.assertEqual(redact('๐๘๙-๐๐๐-๐๐๐๐',policy={'minimum_score':0.9})['summary']['detections'],0)
+
 if __name__=='__main__': unittest.main()
+

@@ -1,0 +1,316 @@
+{
+  "schema_version": 1,
+  "classification": "SYNTHETIC_ONLY",
+  "scope": "Constructed test strings without person identities; checksum validity does not verify assignment. Not a production benchmark.",
+  "cases": [
+    {
+      "id": "mobile-ascii",
+      "text": "SYNTHETIC: 0890000000",
+      "expected": [
+        {
+          "entity": "THAI_MOBILE",
+          "start": 11,
+          "end": 21
+        }
+      ]
+    },
+    {
+      "id": "mobile-dashes",
+      "text": "SYNTHETIC: 089-000-0000",
+      "expected": [
+        {
+          "entity": "THAI_MOBILE",
+          "start": 11,
+          "end": 23
+        }
+      ]
+    },
+    {
+      "id": "mobile-spaces",
+      "text": "SYNTHETIC: 089 000 0000",
+      "expected": [
+        {
+          "entity": "THAI_MOBILE",
+          "start": 11,
+          "end": 23
+        }
+      ]
+    },
+    {
+      "id": "mobile-thai",
+      "text": "SYNTHETIC: ๐๘๙๐๐๐๐๐๐๐",
+      "expected": [
+        {
+          "entity": "THAI_MOBILE",
+          "start": 11,
+          "end": 21
+        }
+      ]
+    },
+    {
+      "id": "mobile-thai-dashes",
+      "text": "SYNTHETIC: ๐๘๙-๐๐๐-๐๐๐๐",
+      "expected": [
+        {
+          "entity": "THAI_MOBILE",
+          "start": 11,
+          "end": 23
+        }
+      ]
+    },
+    {
+      "id": "mobile-mixed",
+      "text": "SYNTHETIC: ๐8๙-๐0๐-๐0๐0",
+      "expected": [
+        {
+          "entity": "THAI_MOBILE",
+          "start": 11,
+          "end": 23
+        }
+      ]
+    },
+    {
+      "id": "mobile-international",
+      "text": "SYNTHETIC: +66890000000",
+      "expected": [
+        {
+          "entity": "THAI_MOBILE",
+          "start": 11,
+          "end": 23
+        }
+      ]
+    },
+    {
+      "id": "mobile-international-spaces",
+      "text": "SYNTHETIC: +66 89 000 0000",
+      "expected": [
+        {
+          "entity": "THAI_MOBILE",
+          "start": 11,
+          "end": 26
+        }
+      ]
+    },
+    {
+      "id": "mobile-international-thai",
+      "text": "SYNTHETIC: +๖๖ ๘๙-๐๐๐-๐๐๐๐",
+      "expected": [
+        {
+          "entity": "THAI_MOBILE",
+          "start": 11,
+          "end": 26
+        }
+      ]
+    },
+    {
+      "id": "mobile-emoji-offset",
+      "text": "😀 สังเคราะห์ โทร๐8๙ ๐0๐ ๐0๐0",
+      "expected": [
+        {
+          "entity": "THAI_MOBILE",
+          "start": 16,
+          "end": 28
+        }
+      ]
+    },
+    {
+      "id": "mobile-thai-prose",
+      "text": "โทร๐๘๙๐๐๐๐๐๐๐",
+      "expected": [
+        {
+          "entity": "THAI_MOBILE",
+          "start": 3,
+          "end": 13
+        }
+      ]
+    },
+    {
+      "id": "id-ascii",
+      "text": "SYNTHETIC: 1234567890121",
+      "expected": [
+        {
+          "entity": "THAI_ID",
+          "start": 11,
+          "end": 24
+        }
+      ]
+    },
+    {
+      "id": "id-formatted",
+      "text": "SYNTHETIC: 1-2345-67890-12-1",
+      "expected": [
+        {
+          "entity": "THAI_ID",
+          "start": 11,
+          "end": 28
+        }
+      ]
+    },
+    {
+      "id": "id-spaces",
+      "text": "SYNTHETIC: 1 2345 67890 12 1",
+      "expected": [
+        {
+          "entity": "THAI_ID",
+          "start": 11,
+          "end": 28
+        }
+      ]
+    },
+    {
+      "id": "id-thai",
+      "text": "SYNTHETIC: ๑๒๓๔๕๖๗๘๙๐๑๒๑",
+      "expected": [
+        {
+          "entity": "THAI_ID",
+          "start": 11,
+          "end": 24
+        }
+      ]
+    },
+    {
+      "id": "id-mixed",
+      "text": "SYNTHETIC: ๑-๒3๔5-6๗8๙0-1๒-๑",
+      "expected": [
+        {
+          "entity": "THAI_ID",
+          "start": 11,
+          "end": 28
+        }
+      ]
+    },
+    {
+      "id": "id-emoji-offset",
+      "text": "😀 สังเคราะห์ เลข๑-๒๓๔๕-๖๗๘๙๐-๑๒-๑",
+      "expected": [
+        {
+          "entity": "THAI_ID",
+          "start": 16,
+          "end": 33
+        }
+      ]
+    },
+    {
+      "id": "email-ascii",
+      "text": "SYNTHETIC: synthetic@example.invalid",
+      "expected": [
+        {
+          "entity": "EMAIL_ADDRESS",
+          "start": 11,
+          "end": 36
+        }
+      ]
+    },
+    {
+      "id": "multiple-entities",
+      "text": "SYNTHETIC: ๑-๒๓๔๕-๖๗๘๙๐-๑๒-๑; 089-000-0000",
+      "expected": [
+        {
+          "entity": "THAI_ID",
+          "start": 11,
+          "end": 28
+        },
+        {
+          "entity": "THAI_MOBILE",
+          "start": 30,
+          "end": 42
+        }
+      ]
+    },
+    {
+      "id": "invalid-checksum",
+      "text": "SYNTHETIC: 1234567890123",
+      "expected": []
+    },
+    {
+      "id": "invalid-checksum-formatted",
+      "text": "SYNTHETIC: 1-2345-67890-12-3",
+      "expected": []
+    },
+    {
+      "id": "invalid-checksum-thai",
+      "text": "SYNTHETIC: ๑-๒๓๔๕-๖๗๘๙๐-๑๒-๓",
+      "expected": []
+    },
+    {
+      "id": "mobile-too-short",
+      "text": "SYNTHETIC: 089000000",
+      "expected": []
+    },
+    {
+      "id": "mobile-too-long",
+      "text": "SYNTHETIC: 08900000001",
+      "expected": []
+    },
+    {
+      "id": "mobile-version",
+      "text": "SYNTHETIC: v0.89.000.0000",
+      "expected": []
+    },
+    {
+      "id": "mobile-version-prefix",
+      "text": "SYNTHETIC: v0890000000",
+      "expected": []
+    },
+    {
+      "id": "mobile-identifier-suffix",
+      "text": "SYNTHETIC: 0890000000beta",
+      "expected": []
+    },
+    {
+      "id": "mobile-dot-suffix",
+      "text": "SYNTHETIC: 0890000000.2",
+      "expected": []
+    },
+    {
+      "id": "mobile-foreign-prefix",
+      "text": "SYNTHETIC: +650890000000",
+      "expected": []
+    },
+    {
+      "id": "id-version-prefix",
+      "text": "SYNTHETIC: v1234567890121",
+      "expected": []
+    },
+    {
+      "id": "id-version-suffix",
+      "text": "SYNTHETIC: 1234567890121.1",
+      "expected": []
+    },
+    {
+      "id": "id-mixed-separators",
+      "text": "SYNTHETIC: 1 2345-67890-12-1",
+      "expected": []
+    },
+    {
+      "id": "mobile-tabs",
+      "text": "SYNTHETIC: 089\t000\t0000",
+      "expected": []
+    },
+    {
+      "id": "mobile-newlines",
+      "text": "SYNTHETIC: 089\n000\n0000",
+      "expected": []
+    },
+    {
+      "id": "fullwidth-digits",
+      "text": "SYNTHETIC: ０８９０００００００",
+      "expected": []
+    },
+    {
+      "id": "unicode-digit-boundary",
+      "text": "SYNTHETIC: ١0890000000",
+      "expected": []
+    },
+    {
+      "id": "thai-digit-boundary",
+      "text": "SYNTHETIC: ๑0890000000",
+      "expected": []
+    },
+    {
+      "id": "numeric-safe-text",
+      "text": "SYNTHETIC: build 2.2.366; count 12345; ไม่มี PII",
+      "expected": []
+    }
+  ]
+}

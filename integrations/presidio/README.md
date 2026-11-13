@@ -39,12 +39,12 @@ All fields are optional; absent fields use all built-ins, score 0.5, and no cust
 
 ## Detection scope
 
-- Contiguous ASCII Thai mobile patterns: `0` plus prefixes 6/8/9, or international `+66`.
-- Contiguous 13-digit ASCII Thai ID patterns, prefix 1–8 and a correct arithmetic checksum.
+- ASCII, Thai digits, or mixed-script Thai mobile patterns: domestic 3-3-4 groups or international `+66` followed by 2-3-4 groups. Each group boundary permits one ordinary space or hyphen; contiguous forms remain supported.
+- Thai ID patterns with ASCII/Thai/mixed digits, prefix 1–8 and a correct arithmetic checksum: contiguous or exact 1-4-5-2-1 grouping with one consistent ordinary space/hyphen separator.
 - Bounded conservative ASCII email pattern.
 - Optional exact literal terms, including Thai text.
 
-A checksum-valid pattern is **not identity verification**. These are Sandworm recognizers, not comprehensive Thai NER. General names/addresses, spaced phones, Thai digit forms, images and OCR are not detected unless a matching literal is configured. Invalid-checksum numbers remain in output. Review every result before sharing.
+A checksum-valid pattern is **not identity verification**. These are Sandworm recognizers, not comprehensive Thai NER. General names/addresses, arbitrary grouping, tabs/newlines between digits, fullwidth/other-script digits, images and OCR are outside this numeric recognizer. Thai digit translation changes exactly one code point to one ASCII digit; normalization does not compose/decompose text, delete separators or alter the original offset map. Numeric/ASCII identifier and version continuations are conservatively rejected. These boundaries may miss numbers touching ASCII prose. Invalid-checksum numbers remain in output. Review every result before sharing.
 
 The worker passes only these explicit recognizers and a blank multilingual tokenizer to Presidio's actual `AnalyzerEngine` and `AnonymizerEngine`. It does not load pretrained NER or download models at runtime. Matched text becomes `[REDACTED]`. Input is bounded at 64 KiB UTF-8 and 1,000 findings; files must be regular files and output is created exclusively, with owner-only permissions on POSIX. Errors contain stable codes and never source fragments, policy terms or file paths.
 
@@ -70,3 +70,20 @@ Original Sandworm worker/UI code: repository MIT license. Presidio packages are 
 - [Adding recognizers](https://github.com/data-privacy-stack/presidio/blob/main/docs/analyzer/adding_recognizers.md) — `PatternRecognizer`, `EntityRecognizer`, registry extension
 
 Presidio is now under Data Privacy Stack. Legacy Microsoft links may redirect or be unavailable; use the current project links above.
+
+## Thai numeric coverage — 2026-11-13
+
+This change applies to the separate Presidio worker. The buildless browser PrivacyGuard still masks emails and selected JSON fields. Its Presidio report importer accepts both the earlier and expanded schema-2 scope labels, with the same strict entity/offset validation.
+
+The labeled fixture dataset is explicitly **SYNTHETIC_ONLY**: constructed strings without person identities, including Thai/ASCII mixed digits, formatted IDs/mobiles, emoji/combining-text offsets, invalid checksums, longer numbers and version/identifier negatives. A checksum or phone-shaped fixture does not verify whether a number is assigned. Do not contact synthetic numbers.
+
+Run in your worker/CI environment:
+
+```sh
+python integrations/presidio/validate.py
+python integrations/presidio/evaluate.py integrations/presidio/fixtures/thai-numeric-synthetic.json --output synthetic-evaluation.local.json
+```
+
+Evaluation reports per-entity true positives, false positives, false negatives, precision and recall using exact original-code-point spans. Zero denominators are reported as null. Reports contain aggregate counts and the dataset hash, never source text, matched values, case offsets or raw exception text. These are fixture coverage measurements, not a production Thai PII benchmark.
+
+The push/pull-request workflow uses the existing pinned Presidio lock, executes worker/browser contract tests, and publishes aggregate evaluation/validation artifacts. Hosted checks for this change are pending execution. Historical committed validation files describe earlier source; this document does not claim a new passing run.
