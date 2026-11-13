@@ -44,7 +44,7 @@ All fields are optional; absent fields use all built-ins, score 0.5, and no cust
 - Bounded conservative ASCII email pattern.
 - Optional exact literal terms, including Thai text.
 
-A checksum-valid pattern is **not identity verification**. These are Sandworm recognizers, not comprehensive Thai NER. General names/addresses, arbitrary grouping, tabs/newlines between digits, fullwidth/other-script digits, images and OCR are outside this numeric recognizer. Thai digit translation changes exactly one code point to one ASCII digit; normalization does not compose/decompose text, delete separators or alter the original offset map. Numeric/ASCII identifier and version continuations are conservatively rejected. These boundaries may miss numbers touching ASCII prose. Invalid-checksum numbers remain in output. Review every result before sharing.
+A checksum-valid pattern is **not identity verification**. These are Sandworm recognizers, not comprehensive Thai NER. General names/addresses, arbitrary grouping, tabs/newlines between digits, fullwidth/other-script digits, images and OCR are outside this numeric recognizer. Thai digit translation changes exactly one code point to one ASCII digit; normalization does not compose/decompose text, delete separators or alter the original offset map. Numeric/ASCII identifier and version continuations are conservatively rejected. A trailing sentence period is preserved when followed by whitespace or end of input; `.2` and `.beta` continuations remain blocked. These boundaries may miss numbers touching ASCII prose. Invalid-checksum numbers remain in output. Review every result before sharing.
 
 The worker passes only these explicit recognizers and a blank multilingual tokenizer to Presidio's actual `AnalyzerEngine` and `AnonymizerEngine`. It does not load pretrained NER or download models at runtime. Matched text becomes `[REDACTED]`. Input is bounded at 64 KiB UTF-8 and 1,000 findings; files must be regular files and output is created exclusively, with owner-only permissions on POSIX. Errors contain stable codes and never source fragments, policy terms or file paths.
 
@@ -75,7 +75,7 @@ Presidio is now under Data Privacy Stack. Legacy Microsoft links may redirect or
 
 This change applies to the separate Presidio worker. The buildless browser PrivacyGuard still masks emails and selected JSON fields. Its Presidio report importer accepts both the earlier and expanded schema-2 scope labels, with the same strict entity/offset validation.
 
-The labeled fixture dataset is explicitly **SYNTHETIC_ONLY**: constructed strings without person identities, including Thai/ASCII mixed digits, formatted IDs/mobiles, emoji/combining-text offsets, invalid checksums, longer numbers and version/identifier negatives. A checksum or phone-shaped fixture does not verify whether a number is assigned. Do not contact synthetic numbers.
+The labeled fixture dataset is explicitly **SYNTHETIC_ONLY**: constructed strings without person identities, 44 cases including Thai/ASCII mixed digits, formatted IDs/mobiles, terminal sentence periods, emoji/combining-text offsets, invalid checksums, longer numbers and version/identifier negatives. A checksum or phone-shaped fixture does not verify whether a number is assigned. Do not contact synthetic numbers.
 
 Run in your worker/CI environment:
 

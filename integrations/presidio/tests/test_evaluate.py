@@ -8,7 +8,7 @@ class SyntheticEvaluationTests(unittest.TestCase):
   raw=(ROOT/'fixtures/thai-numeric-synthetic.json').read_bytes()
   result=evaluate(raw)
   self.assertEqual(result['mode'],'synthetic-fixture')
-  self.assertEqual(result['cases'],38)
+  self.assertEqual(result['cases'],44)
   for entity in ['THAI_ID','THAI_MOBILE','EMAIL_ADDRESS']:
    self.assertGreater(result['entities'][entity]['true_positives'],0)
    self.assertEqual(result['entities'][entity]['false_positives'],0)

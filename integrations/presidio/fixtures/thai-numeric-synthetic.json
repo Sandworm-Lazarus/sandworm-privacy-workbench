@@ -311,6 +311,60 @@
       "id": "numeric-safe-text",
       "text": "SYNTHETIC: build 2.2.366; count 12345; ไม่มี PII",
       "expected": []
+    },
+    {
+      "id": "mobile-sentence-period",
+      "text": "SYNTHETIC: โทร 089-000-0000.",
+      "expected": [
+        {
+          "entity": "THAI_MOBILE",
+          "start": 15,
+          "end": 27
+        }
+      ]
+    },
+    {
+      "id": "mobile-thai-emoji-period",
+      "text": "😀 SYNTHETIC: โทร๐๘๙-๐๐๐-๐๐๐๐. จบ",
+      "expected": [
+        {
+          "entity": "THAI_MOBILE",
+          "start": 16,
+          "end": 28
+        }
+      ]
+    },
+    {
+      "id": "id-sentence-period",
+      "text": "SYNTHETIC: เลข 1-2345-67890-12-1.",
+      "expected": [
+        {
+          "entity": "THAI_ID",
+          "start": 15,
+          "end": 32
+        }
+      ]
+    },
+    {
+      "id": "id-thai-emoji-period",
+      "text": "😀 SYNTHETIC: เลข๑-๒๓๔๕-๖๗๘๙๐-๑๒-๑. จบ",
+      "expected": [
+        {
+          "entity": "THAI_ID",
+          "start": 16,
+          "end": 33
+        }
+      ]
+    },
+    {
+      "id": "mobile-version-word",
+      "text": "SYNTHETIC: 0890000000.beta",
+      "expected": []
+    },
+    {
+      "id": "mobile-thai-decimal",
+      "text": "SYNTHETIC: ๐๘๙๐๐๐๐๐๐๐.๒",
+      "expected": []
     }
   ]
 }

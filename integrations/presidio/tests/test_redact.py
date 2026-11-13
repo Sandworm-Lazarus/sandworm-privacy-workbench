@@ -106,6 +106,19 @@ class NumericCoverageTests(unittest.TestCase):
   self.assertEqual(finding['start'],len('😀 ก\u0e33 โทร'))
   self.assertEqual(report['redactedText'],'😀 ก\u0e33 โทร[REDACTED] จบ')
   self.assertNotIn(value,json.dumps(report,ensure_ascii=False))
+ def test_sentence_periods_preserve_offsets_and_punctuation(self):
+  for entity,value in [('THAI_MOBILE','๐๘๙-๐๐๐-๐๐๐๐'),('THAI_ID','๑-๒๓๔๕-๖๗๘๙๐-๑๒-๑')]:
+   for suffix in ['.','. จบ']:
+    text='😀 สังเคราะห์ '+value+suffix
+    report=redact(text,self.analyzer)
+    self.assertEqual(report['redactedText'],'😀 สังเคราะห์ [REDACTED]'+suffix)
+    self.assertEqual(len(report['findings']),1)
+    found=report['findings'][0]
+    self.assertEqual(found['entity'],entity)
+    self.assertEqual(text[found['start']:found['end']],value)
+    self.assertEqual(found['start'],len('😀 สังเคราะห์ '))
+  for text in ['0890000000.2','0890000000.beta','๐๘๙๐๐๐๐๐๐๐.๒','1234567890121.2']:
+   self.assertEqual(redact(text,self.analyzer)['summary']['detections'],0)
  def test_normalization_is_one_codepoint_only(self):
   from redact import normalize_numeric_text
   original='😀 ก\u0e33 A\u0301 ๐8๙ fullwidth０'

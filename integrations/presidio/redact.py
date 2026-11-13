@@ -21,7 +21,13 @@ def numeric_boundary(text, start, end):
     # scripts and hyphenated/version continuations must not yield a substring.
     def blocked(char):
         return char.isdecimal() or char in 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_+.-'
-    return (start == 0 or not blocked(text[start-1])) and (end == len(text) or not blocked(text[end]))
+    if start > 0 and blocked(text[start-1]): return False
+    if end == len(text): return True
+    # A single trailing sentence period is punctuation only at end/whitespace.
+    # Keep decimal/version/identifier continuations such as .2 and .beta blocked.
+    if text[end] == '.':
+        return end+1 == len(text) or text[end+1].isspace()
+    return not blocked(text[end])
 
 def valid_thai_id(value):
     if not isinstance(value, str) or len(value) > 17: return False
