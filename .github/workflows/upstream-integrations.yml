@@ -1,4 +1,4 @@
-name: Verify Sandworm source
+name: Verify Presidio integration
 on:
   push:
   pull_request:
@@ -28,3 +28,12 @@ jobs:
           python -m pip install -r integrations/presidio/requirements.lock
           python integrations/presidio/validate.py
           npm run validate:presidio-ui
+      - name: Publish aggregate synthetic evaluation
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: presidio-synthetic-evaluation
+          path: |
+            integrations/presidio/reports/validation.json
+            integrations/presidio/reports/thai-numeric-evaluation.json
+          retention-days: 14
+          if-no-files-found: error

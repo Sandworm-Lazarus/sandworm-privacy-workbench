@@ -114,3 +114,7 @@ Application code and original artwork are released under the [MIT License](LICEN
 ## Presidio report review (0.2.0)
 
 The [Presidio worker](integrations/presidio/README.md) now supports choosing Thai PII types, a score threshold and bounded exact custom terms. Run it in your local/cloud Python environment, then import its schema 2 JSON into the **Presidio** section of the existing UI. Import clears the source, shows redacted text with finding metadata, and preserves review-before-export. The browser does not run Python or upload data. Source claims in imported reports are not authenticated.
+
+## Thai numeric worker coverage (2026-11-13)
+
+The optional Presidio worker now recognizes Thai/ASCII mixed digits, bounded space/hyphen mobile formats and checksum-valid formatted Thai IDs while retaining original Unicode code-point offsets. A labeled synthetic-only evaluation produces aggregate per-entity precision/recall and false-positive counts. See [worker scope and evaluation](integrations/presidio/README.md#thai-numeric-coverage--2026-11-13). The standalone browser email/field engine remains separate; imported schema-2 reports stay compatible. Hosted checks for this change are pending execution.
